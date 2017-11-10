@@ -1,7 +1,6 @@
 // Load Modules
 let express = require('express');
 let path = require('path');
-let favicon = require('serve-favicon');
 let cookieParser = require('cookie-parser');
 let bodyParser = require('body-parser');
 
@@ -16,7 +15,6 @@ let index = require('./routes/index');
 let app = express();
 
 // Boiler Plate Middleware
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger.access);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
