@@ -1,0 +1,133 @@
+/*==========  Mobile First Method  ==========*/
+
+
+/* Custom, iPhone Retina */
+
+@media only screen and (min-width: 320px) {
+
+    .logo {
+        max-width: 150px;
+    }
+
+    .project {
+        margin: 0 0 20px 0;
+
+    }
+     .banner{
+        height: 400px;
+    }
+   
+}
+
+
+/* Extra Small Devices, Phones */
+
+@media only screen and (max-width: 480px) {
+
+    .logo {
+        max-width: 150px;
+    }
+
+    .img-responsive {
+        min-width: 100%;
+    }
+
+    .project {
+        margin: 0 0 20px 0;
+    }
+    .banner{
+        height: 600px;
+    }
+     .footer_text{
+        font-size: 10px;
+    }
+    
+
+   
+    
+ 
+
+}
+
+@media only screen and (max-width: 600px) {
+    .blue_tab{
+      height: 500px;  
+    }
+
+    .img_scale{
+        width: 100%;
+    }
+}
+
+
+/* Small Devices, Tablets */
+
+@media only screen and (min-width: 768px) {
+
+    .img-responsive {
+        min-width: 100%;
+    }
+
+    .project {
+        margin: 0 0 20px 0;
+    }
+        .tab_box{
+        height: 350px;
+    }
+   .logo_size_footer{
+    width: 8%;
+    padding: 20px;
+}
+    
+ 
+    }
+
+
+@media only screen and (max-width: 768px) {
+     
+   
+    .tab_icons{
+        width: 20%;
+    }
+    .tab_text{
+        font-size: 20px;
+    }
+
+    .logo_size_footer{
+    width: 40%;
+    padding: 20px;
+    }
+        .position_app{
+     display: none;
+    }
+    
+}
+    
+
+
+//*-- Medium Devices, Desktops --*//
+
+@media only screen and (min-width: 992px) {
+      .tab_box{
+        height: 200px;
+    }
+}
+
+
+@media only screen and (max-width: 992px) {
+    
+    .position_app, .position_dashboard{
+     display: none;
+    }
+    
+}
+    
+
+
+
+//*-- Large Devices, Wide Screens --*//
+
+@media only screen and (min-width: 1200px) {   
+    
+}
+
