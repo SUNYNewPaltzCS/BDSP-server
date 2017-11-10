@@ -3,6 +3,12 @@ let path = require('path');
 let rfs = require('rotating-file-stream');
 let logger = require('morgan');
 
+// Use the current timezone
+logger.token('date', function() {
+    var p = new Date().toString().replace(/[A-Z]{3}\+/,'+').split(/ /);
+    return( p[2]+'/'+p[1]+'/'+p[3]+':'+p[4]+' '+p[5] );
+});
+
 /* Resolve log directory */
 let logDirectory = path.join(__dirname, '../', 'log');
 
