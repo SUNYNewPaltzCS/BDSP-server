@@ -1,6 +1,0 @@
-table Poughkeepsie_Sanitation
-id truckID
-url http://localhost:3000/ft_test/
-email zhunio.developer@gmail.com
-textfield tons
-endFile

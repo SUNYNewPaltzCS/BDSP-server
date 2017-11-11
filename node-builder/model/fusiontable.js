@@ -23,7 +23,7 @@ let path = require('path');
 
 // Resolve file paths relative to this module
 let clientSecrets = fs.readFileSync(
-    path.join(__dirname, '..', 'client_secrets.json'));
+    path.join(__dirname, '..', 'private', 'client_secrets.json'));
 let tokensFilepath = path.join(__dirname, '..', 'private', 'tokens.json');
 let tokensOnFile = fs.readFileSync(tokensFilepath);
 
