@@ -158,3 +158,7 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# Hide important files
+node-builder/apk
+node-builder/private
