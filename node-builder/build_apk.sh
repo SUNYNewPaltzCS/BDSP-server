@@ -4,6 +4,9 @@ echo $SHELL
 # Should be in root of bdsp, cd into node-builder
 cd node-builder
 
+# Create public downloads directory
+mkdir public/downloads
+
 if [ -n "$1" ]; then
 		# Test if apk/apk-latest.apk exists
 		if [ -f $1 ]; then
@@ -35,8 +38,10 @@ if [ -n "$1" ]; then
 				rm signed_mod_app.apk
 			fi
 
-			# Sign the app and move it to public/downloads/
+			# Sign the app
 			signapk.sh $(pwd)/mod_app.apk
+
+			# Make sure public/downloads exists, otherwise create it
 			if [ -n $2 ]; then
 				mv signed_mod_app.apk $2
 			fi
