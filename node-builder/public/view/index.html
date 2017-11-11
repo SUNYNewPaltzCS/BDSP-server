@@ -1,0 +1,85 @@
+<style>
+label {
+	display:inline-block;
+	min-width: 200px;
+	margin-right: 10px;
+}
+input {
+	display: inline-block;
+}
+.arrow > a:link {
+	text-decoration: none;
+	font-size: 1.2em;
+	font-weight: bold;
+}
+.add-opt {
+	border: 2px solid #888888;
+	border-radius: 6px;
+	padding: 5px 5px;
+	margin: 5px;
+}
+.loader {
+	border: 16px solid #f3f3f3; /* Light grey */
+			  border-top: 16px solid #3498db; /* Blue */
+			  border-radius: 50%;
+	width: 40px;
+	height: 40px;
+	animation: spin 2s linear infinite;
+}
+
+	@keyframes spin {
+		0% { transform: rotate(0deg); }
+		100% { transform: rotate(360deg); }
+	}
+</style>
+<form ng-submit="submit()">
+<label for="tableSel">Select table:</label>
+<select ng-model="selectIndex" name="selected-table">
+	<option value="" disabled selected hidden>Choose a table...</option>
+	<option value="{{$index}}" ng-repeat="row in table.items">{{row.name}}</option>
+</select>
+<div ng-if="selectIndex">
+	<div>
+		<label for="idSel">User ID/Login (required):</label>
+		<select name="idSel" ng-model="table.items[selectIndex].id">
+			<option value="" disabled selected hidden>Choose ID field</option>
+			<option value="{{column.name}}" ng-repeat="column in table.items[selectIndex].columns">{{column.name}}</option>
+		</select>
+	</div>
+	<div class="add-opt" ng-repeat="column in table.items[selectIndex].columns">
+		<span class="arrow">
+			<a ng-click="moveUp($index)" href="">&uarr;</a>
+			<a ng-click="moveDown($index)" href="">&darr;</a>
+		</span>
+		<span style="min-width:15%; display:inline-block;">
+		<label for="colType">{{column.name}}</label>
+		<select ng-disabled="notSel(column)" ng-init="column.inputType = 'unused'" ng-model="column.inputType">
+			<option value="unused">Not Used</option>
+			<option value="textfield">Text</option>
+			<option value="dropdown">Dropdown</option>
+			<option value="bluetooth">Bluetooth</option>
+			<option value="photo">Camera</option>
+			<option value="gpsTracker">KML Path Data</option>
+			<option value="run">Run</option>
+			<option value="lat-on-sub">Latitude (on submission)</option>
+			<option value="lon-on-sub">Longitude (on submission)</option>
+		</select>
+		</span>
+		<div ng-if="column.inputType === 'gpsTracker'">
+			<label for="gpsInterval">GPS ping interval (Milliseconds)</label>
+			<input type="text" name="gpsInterval" ng-model="column.gpsInterval"></input>
+			<p>
+			**KML Path Data expects a "start" and "end" field in the FusionTable and "not used" in this form**
+			</p>
+		</div>
+		<div ng-if="column.inputType === 'dropdown'">
+			<label for="gpsInterval">Comma separated list of options</label>
+			<input ng-model="column.ddoptions" type="text" >
+			</input>
+		</div>
+	</div>
+	<div ng-show="loading" class="loader">Building, please wait...</div>
+	<input ng-hide="loading" ng-if="table.items[selectIndex].id" type="submit"></input>
+</div>
+</form>
+
