@@ -13,7 +13,16 @@ logger.token('date', function() {
 let logDirectory = path.join(__dirname, '../', 'log');
 
 /* Ensure log directory exists */
-fs.exists(logDirectory || fs.mkdirSync(logDirectory));
+fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory);
+
+/* Format string of predefined tokens */
+let token = ':method :url :status :response-time ms :res[content-length] - :date[web]';
+
+/* Correct date not being logged correctly */
+logger.token('date', function() {
+    let p = new Date().toString().replace(/[A-Z]{3}\+/,'+').split(/ /);
+    return(p[4] + ' ' + p[0] + ', '+ p[2] + ' ' + p[1] + ' '+ p[3] + ' ' + p[5] );
+});
 
 /* Create access log for each day */
 let accessLogStream = rfs('access.log', {
@@ -27,8 +36,8 @@ let errorLogStream = rfs('error.log', {
     path: logDirectory
 });
 
-module.exports.access = logger('combined', { stream: accessLogStream });
-module.exports.error = logger('combined', {
+module.exports.access = logger(token, { stream: accessLogStream });
+module.exports.error = logger(token, {
     skip: (req, res) => res.statusCode < 400,
     stream: errorLogStream
 });

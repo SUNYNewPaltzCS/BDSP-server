@@ -23,6 +23,7 @@ app.use(session({
 app.get("/fusiontable", fusiontable.generateUserConsentUrl)
     .get("/fusiontable/auth", fusiontable.oauthCallback)
     .get("/fusiontable/table", fusiontable.retrieveFusionTables)
+    .post("/fusiontable/update.php", fusiontable.updateFusionTables)
 
 // Build App Middleware
     .get("/downloads/:file", function (req, res) {

@@ -1,16 +1,3 @@
-// Copyright 2012-2016, Google, Inc.
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//    http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 'use strict';
 
 // Load Modules
@@ -52,6 +39,92 @@ google.options({
 let fusiontables = {
     blank: function () {
         return {};
+    },
+    /**
+     * Updates the google fusion tables.
+     * @param req {req.query.email} email of user owning the table
+     * @param req {req.query.table} table name
+     * @param req {req.body} contains an array of elements
+     * @param next
+     */
+    updateFusionTables: (req, res, next) => {
+
+        // If trying to update without passing any query parameters
+        if ( Object.keys( req.query ).length === 0 ) {
+            next( new Error( 'Trying to update to fusion tables without passing query parameters' ) );
+            return;
+        }
+
+        // Retrieve Important URL Parameters
+        let email = req.query.email;
+        let table = req.query.table;
+
+        // Read tokens from database
+        let tokensFile = JSON.parse( tokensOnFile );
+
+        // Find the token with matching email
+        let token = tokensFile.find( token => token.email === email );
+
+        // Make sure token has a refresh token
+        if ( token === null || token.refresh_token === null || token.access_token === null ) {
+            next( new Error( 'Cannot upload to fusion tables. ' + email +
+                ' does not have a valid refresh token.' ) );
+            return;
+        }
+
+        // Set credentials to access fusion tables
+        oauth2Client.setCredentials( {
+            access_token: token.access_token,
+            refresh_token: token.refresh_token
+        } );
+
+        // Get list of fusion tables that email has access to
+        ft.table.list( {}, [], function (err, profile) {
+
+            // If an error occurs while trying to get list of tables
+            if ( err ) {
+                next( new Error( 'Trying to get list of fusion tables.' + err.message ) );
+                return;
+            }
+
+            // Find the the table the user wants to upload information to
+            // tableFound has property tableId later used
+            let tableFound = profile.items.find( element => element.name === table );
+
+            // Make sure table is found
+            if ( tableFound === null ) {
+                next( new Error( 'Trying to access table this user has not access to.' ) );
+            }
+
+            // Get body from req object
+            let body = req.body;
+
+            // Format query for submission to fusion table
+            body.forEach( element => {
+
+                if ('geometry' in element) {
+                    element.distance = kmlToDistance(element.geometry);
+                }
+
+                // INSERT INTO ${tableId} ('latitude', 'longitude', ...)
+                // VALUES ('41.7403913', '-74.082381', ...)
+                let query = `
+                    INSERT INTO "${tableFound.tableId}" (${Object.keys( element ).map( k => `'${k}'` )})
+                    VALUES (${Object.keys( element ).map( k => `'${element[k]}'` )}) 
+                `;
+
+                // Make call to google fusion table rest api and update table
+                ft.query.sql( { sql: query }, {}, err => {
+                    if ( err ) {
+                        next( new Error( 'Could not update to google fusion tables.' ) );
+                    }
+                } );
+            } );
+
+            // Send Good status
+            res.sendStatus( 200 );
+        } );
+
     },
     /**
      * Properly save tokens into a tokensFilepath defined above.
@@ -261,3 +334,50 @@ let fusiontables = {
 };
 
 module.exports = fusiontables;
+
+function toRadians(degrees) {
+    return degrees * Math.PI / 180;
+}
+
+// req.body and req.query
+function calcDistance(lon1, lat1, lon2, lat2) {
+    lon1 = toRadians( lon1 );
+    lat1 = toRadians( lat1 );
+    lon2 = toRadians( lon2 );
+    lat2 = toRadians( lat2 );
+
+    let dlon = lon2 - lon1;
+    let dlat = lat2 - lat1;
+
+    let a = Math.pow( Math.sin( dlat / 2 ), 2 ) + Math.cos( lat1 ) * Math.cos( lat2 ) * Math.pow( Math.sin( dlon / 2 ), 2 );
+    let c = 2 * Math.atan2( Math.sqrt( a ), Math.sqrt( 1 - a ) );
+
+    let d = 3961 * c;
+
+    return d;
+}
+
+
+function kmlToDistance(kmlStr) {
+    let values = kmlStr.match( /<coordinates>(.*?)<\/coordinates>/ )[1].split( ' ' );
+    let d = 0;
+
+    if(values[0] === null || values[0] === 'null')
+        return d;
+
+    for (let i = 0; i < values.length; i++) {
+        values[i] += ',' + values.splice(i+1, 1)[0];
+    }
+
+    values.forEach(values => {
+        values = values.split( ',' ).concat( values[1].split( ',' ) );
+        let lon1 = parseFloat( values[0] );
+        let lat1 = parseFloat( values[1] );
+        let lon2 = parseFloat( values[2] );
+        let lat2 = parseFloat( values[3] );
+
+        d = d + calcDistance( lon1, lat1, lon2, lat2 );
+    });
+
+    return d;
+}
