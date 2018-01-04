@@ -19,7 +19,7 @@ let tokensOnFile = fs.readFileSync(tokensFilepath);
 let client_secrets = JSON.parse(clientSecrets);
 let CLIENT_ID = client_secrets.web.client_id;
 let CLIENT_SECRET = client_secrets.web.client_secret;
-let REDIRECT_URL = 'http://localhost:3000/node-builder/fusiontable/auth';
+let REDIRECT_URL = 'http://localhost:8080/node-builder/fusiontable/auth';
 
 // Fusion table and user info scopes
 let scopes = [
@@ -28,7 +28,7 @@ let scopes = [
 ];
 
 // Site used for redirection once all authentication has been done
-let site = "http://localhost:3000/node-builder";
+let site = "http://localhost:8080/node-builder";
 
 let oauth2Client = new OAuth2Client(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL);
 google.options({

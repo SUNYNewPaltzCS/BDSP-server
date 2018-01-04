@@ -19,7 +19,7 @@ module.exports = {
 		let currentStr = "";
 		buildApp.push("table " + table.name); //add table name
 		buildApp.push("id " +  table.id ); //add table name
-		buildApp.push("url http://192.168.0.18:3000/node-builder/fusiontable/");
+		buildApp.push("url http://localhost:8080/node-builder/fusiontable/");
 		buildApp.push("email " + req.session.email);
 		console.log(req.session.email);
 		table.columns.forEach(function(col) {
