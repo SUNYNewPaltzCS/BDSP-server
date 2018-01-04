@@ -28,7 +28,7 @@ let scopes = [
 ];
 
 // Site used for redirection once all authentication has been done
-let site = "http://localhost:8080/node-builder";
+let site = "http://bd-sp.org:8080/node-builder";
 
 let oauth2Client = new OAuth2Client(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL);
 google.options({
