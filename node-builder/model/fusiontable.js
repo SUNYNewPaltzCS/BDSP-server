@@ -104,7 +104,7 @@ let fusiontables = {
             let body = req.body;
 
             // Format query for submission to fusion table
-            body.forEach( formatQuery);
+            formatQueryForFusionTable(tableFound, body);
 
             // Send Good status
             res.sendStatus( 200 );
@@ -114,19 +114,21 @@ let fusiontables = {
             return token.email === email;
         }
 
-        function formatQuery(element) {
-            if ('geometry' in element) {
-                element.distance = kmlToDistance(element.geometry);
-            }
+        function formatQueryForFusionTable(table, body) {
+            body.forEach(function formatQuery(element) {
+                if ('geometry' in element) {
+                    element.distance = kmlToDistance(element.geometry);
+                }
 
-            // INSERT INTO ${tableId} ('latitude', 'longitude', ...)
-            // VALUES ('41.7403913', '-74.082381', ...)
-            let query = `
-                    INSERT INTO "${tableFound.tableId}" (${Object.keys( element ).map( k => `'${k}'` )})
+                // INSERT INTO ${tableId} ('latitude', 'longitude', ...)
+                // VALUES ('41.7403913', '-74.082381', ...)
+                let query = `
+                    INSERT INTO "${table.tableId}" (${Object.keys( element ).map( k => `'${k}'` )})
                     VALUES (${Object.keys( element ).map( k => `'${element[k]}'` )}) 
                 `;
 
-            sendQueryToFusionTable(query);
+                sendQueryToFusionTable(query);
+            });
         }
 
         function sendQueryToFusionTable(query) {
