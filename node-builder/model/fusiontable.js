@@ -19,7 +19,7 @@ let tokensOnFile = fs.readFileSync(tokensFilepath);
 let client_secrets = JSON.parse(clientSecrets);
 let CLIENT_ID = client_secrets.web.client_id;
 let CLIENT_SECRET = client_secrets.web.client_secret;
-let REDIRECT_URL = 'http://localhost:8080/node-builder/fusiontable/auth';
+let REDIRECT_URL = 'http://bd-sp.org:8080/node-builder/fusiontable/auth';
 
 // Fusion table and user info scopes
 let scopes = [
