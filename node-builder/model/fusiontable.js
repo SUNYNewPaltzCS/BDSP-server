@@ -12,7 +12,8 @@ let path = require('path');
 let clientSecrets = fs.readFileSync(
     path.join(__dirname, '..', 'private', 'client_secrets.json'));
 let tokensFilepath = path.join(__dirname, '..', 'private', 'tokens.json');
-let tokensOnFile = fs.readFileSync(tokensFilepath);
+let tokensFile = fs.readFileSync(tokensFilepath);
+let logsFilePath = path.join(__dirname, '..', 'internalServerError.log');
 
 // Client ID and client secret are available at
 // https://code.google.com/apis/console
@@ -49,10 +50,12 @@ let fusiontables = {
      */
     updateFusionTables: (req, res, next) => {
 
+        let errorMessage = '';
+
         // If trying to update without passing any query parameters
         if ( Object.keys( req.query ).length === 0 ) {
-            next( new Error( 'Trying to update to fusion tables without passing query parameters' ) );
-            return;
+            errorMessage = 'Trying to update to fusion tables without passing query parameters';
+            return createErrorMessage(next, errorMessage);
         }
 
         // Retrieve Important URL Parameters
@@ -60,16 +63,16 @@ let fusiontables = {
         let table = req.query.table;
 
         // Read tokens from database
-        let tokensFile = JSON.parse( tokensOnFile );
+        let tokensJSON = readTokens();
 
         // Find the token with matching email
-        let token = tokensFile.find( token => token.email === email );
+        let token = tokensJSON.find( matchingEmail );
 
         // Make sure token has a refresh token
         if ( token === null || token.refresh_token === null || token.access_token === null ) {
-            next( new Error( 'Cannot upload to fusion tables. ' + email +
-                ' does not have a valid refresh token.' ) );
-            return;
+            errorMessage = 'Cannot upload to fusion tables. ' + email +
+                ' does not have a valid refresh token.';
+            return createErrorMessage(next, errorMessage);
         }
 
         // Set credentials to access fusion tables
@@ -83,8 +86,8 @@ let fusiontables = {
 
             // If an error occurs while trying to get list of tables
             if ( err ) {
-                next( new Error( 'Trying to get list of fusion tables.' + err.message ) );
-                return;
+                errorMessage = 'Trying to get list of fusion tables.' + err.message;
+                return createErrorMessage(next, errorMessage);
             }
 
             // Find the the table the user wants to upload information to
@@ -93,37 +96,48 @@ let fusiontables = {
 
             // Make sure table is found
             if ( tableFound === null ) {
-                next( new Error( 'Trying to access table this user has not access to.' ) );
+                errorMessage = 'Trying to access table this user has not access to.';
+                return createErrorMessage(next, errorMessage);
             }
 
             // Get body from req object
             let body = req.body;
 
             // Format query for submission to fusion table
-            body.forEach( element => {
-
-                if ('geometry' in element) {
-                    element.distance = kmlToDistance(element.geometry);
-                }
-
-                // INSERT INTO ${tableId} ('latitude', 'longitude', ...)
-                // VALUES ('41.7403913', '-74.082381', ...)
-                let query = `
-                    INSERT INTO "${tableFound.tableId}" (${Object.keys( element ).map( k => `'${k}'` )})
-                    VALUES (${Object.keys( element ).map( k => `'${element[k]}'` )}) 
-                `;
-
-                // Make call to google fusion table rest api and update table
-                ft.query.sql( { sql: query }, {}, err => {
-                    if ( err ) {
-                        next( new Error( 'Could not update to google fusion tables.' ) );
-                    }
-                } );
-            } );
+            body.forEach( formatQuery);
 
             // Send Good status
             res.sendStatus( 200 );
         } );
+
+        function matchingEmail(token) {
+            return token.email === email;
+        }
+
+        function formatQuery(element) {
+            if ('geometry' in element) {
+                element.distance = kmlToDistance(element.geometry);
+            }
+
+            // INSERT INTO ${tableId} ('latitude', 'longitude', ...)
+            // VALUES ('41.7403913', '-74.082381', ...)
+            let query = `
+                    INSERT INTO "${tableFound.tableId}" (${Object.keys( element ).map( k => `'${k}'` )})
+                    VALUES (${Object.keys( element ).map( k => `'${element[k]}'` )}) 
+                `;
+
+            sendQueryToFusionTable(query);
+        }
+
+        function sendQueryToFusionTable(query) {
+            // Make call to google fusion table rest api and update table
+            return ft.query.sql( { sql: query }, {}, err => {
+                if ( err ) {
+                    errorMessage = 'Could not update to google fusion tables.';
+                    return createErrorMessage(next, errorMessage);
+                }
+            } );
+        }
 
     },
     /**
@@ -141,14 +155,14 @@ let fusiontables = {
         };
 
         // Read tokens from database
-        let tokensFile = JSON.parse(tokensOnFile);
+        let tokensJSON = readTokens();
 
         // Let's assume user is not on database
         let exists = -1;
 
         // Check if user is in our database
-        for (var i = 0; i < tokensFile.length; i++) {
-            if (email === tokensFile[i].email) {
+        for (let i = 0; i < tokensJSON.length; i++) {
+            if (email === tokensJSON[i].email) {
                 exists = i;
                 break;
             }
@@ -158,7 +172,7 @@ let fusiontables = {
         if (user.refresh_token === undefined) {
 
             // If it is in our database, refresh access_token
-            if (exists > -1 ) { tokensFile[exists].access_token = user.access_token }
+            if (exists > -1 ) { tokensJSON[exists].access_token = user.access_token }
 
             // otherwise, throw an error because we need refresh_token
             else { throw new Error
@@ -171,7 +185,7 @@ let fusiontables = {
         }
         // if user does contain a refresh token, it should possibly be a new user
         else {
-            if (exists === -1) { tokensFile.push(user); }
+            if (exists === -1) { tokensJSON.push(user); }
 
             // Notify what happened
             console.log('New token for: ' + email);
@@ -181,7 +195,7 @@ let fusiontables = {
 
         // Write the changes
         let options = {flag: 'w'};
-        fs.writeFileSync(tokensFilepath, JSON.stringify(tokensFile), options, function (err) {
+        fs.writeFileSync(tokensFilepath, JSON.stringify(tokensJSON), options, function (err) {
             if (err) throw err;
             console.log('File saved.');
         });
@@ -335,11 +349,24 @@ let fusiontables = {
 
 module.exports = fusiontables;
 
+function createErrorMessage(next, message) {
+    fs.writeFile(logsFilePath, message, err => {
+        if (err) {
+            console.log('Error logging internal errors');
+        }
+
+        return next( new Error( message ));
+    });
+}
+
+function readTokens() {
+    return JSON.parse( tokensFile );
+}
+
 function toRadians(degrees) {
     return degrees * Math.PI / 180;
 }
 
-// req.body and req.query
 function calcDistance(lon1, lat1, lon2, lat2) {
     lon1 = toRadians( lon1 );
     lat1 = toRadians( lat1 );
@@ -356,7 +383,6 @@ function calcDistance(lon1, lat1, lon2, lat2) {
 
     return d;
 }
-
 
 function kmlToDistance(kmlStr) {
     let values = kmlStr.match( /<coordinates>(.*?)<\/coordinates>/ )[1].split( ' ' );
