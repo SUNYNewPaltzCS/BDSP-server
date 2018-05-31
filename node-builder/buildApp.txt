@@ -1,6 +1,8 @@
-table bdspTestTable
-id truckID
-url http://192.168.0.18:3000/node-builder/fusiontable/
-email zhunio.developer@gmail.com
-textfield tons
+table assetTest
+id ID
+url http://bd-sp.org:8080/node-builder/fusiontable/
+email simonsj@newpaltz.edu
+textfield Quantity
+dropdown Thing [thing1,thing2,thing499]
+locOnSub 1 Latitude Longitude
 endFile

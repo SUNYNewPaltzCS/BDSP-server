@@ -5,6 +5,7 @@ let cookieParser = require('cookie-parser');
 let bodyParser = require('body-parser');
 
 // Load User Defined Middleware
+let updateFusionTables = require('../node-builder/model/fusiontable').updateFusionTables;
 let logger = require('./lib/logger');
 let err = require('./lib/errors');
 
@@ -25,6 +26,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 // User defined middleware Routes
 app.use('/', index);
 app.use('/node-builder', nodeBuilder);
+app.use('/ft_test', updateFusionTables);
 
 // Error Logging, catching, and handling
 app.use(logger.error);

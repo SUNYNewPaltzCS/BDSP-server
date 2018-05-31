@@ -56,6 +56,7 @@ let fusiontables = {
 
         // Get body from req object
         let body = req.body;
+	console.log(body);
 
         // If trying to update without passing any query parameters
         if ( Object.keys( req.query ).length === 0 ) {
