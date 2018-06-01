@@ -38,6 +38,12 @@ google.options( {
 
 
 let fusiontables = {
+
+    photoHandler: (req, res, next) => {
+        console.log( req.file );
+        res.sendStatus( 200 );
+    },
+
     blank: function () {
         return {};
     },
@@ -56,7 +62,8 @@ let fusiontables = {
 
         // Get body from req object
         let body = req.body;
-	console.log(body);
+        console.log( body );
+
 
         // If trying to update without passing any query parameters
         if ( Object.keys( req.query ).length === 0 ) {
