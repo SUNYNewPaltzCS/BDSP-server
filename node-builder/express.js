@@ -36,7 +36,6 @@ app.get( '/fusiontable', fusiontable.generateUserConsentUrl )
     .get( '/fusiontable/table', fusiontable.retrieveFusionTables )
     .post( '/fusiontable/update.php', fusiontable.updateFusionTables )
     .post( '/photohandler', upload.single( 'photo' ), fusiontable.photoHandler )
-    .use( '/uploads', express.static( path.join( __dirname, '../uploads' ) ) )
 
     // Build App Middleware
     .get( '/downloads/:file', function (req, res) {
