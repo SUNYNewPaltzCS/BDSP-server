@@ -1,8 +1,0 @@
-table assetTest
-id ID
-url http://bd-sp.org:8080/node-builder/fusiontable/
-email simonsj@newpaltz.edu
-textfield Quantity
-dropdown Thing [thing1,thing2,thing499]
-locOnSub 1 Latitude Longitude
-endFile
