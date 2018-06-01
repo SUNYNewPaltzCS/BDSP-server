@@ -28,7 +28,7 @@ app.use( express.static( path.join( __dirname, '../public' ) ) );
 app.use( '/', index );
 app.use( '/node-builder', nodeBuilder );
 app.use( '/ft_test', updateFusionTables );
-app.use( '/uploads', express.static( path.join( __dirname, '../uploads' ) );
+app.use( '/uploads', express.static( path.join( __dirname, '../uploads' ) ) );
 
 // Error Logging, catching, and handling
 app.use( logger.error );
