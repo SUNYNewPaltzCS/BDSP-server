@@ -41,6 +41,7 @@ let fusiontables = {
 
     photoHandler: (req, res, next) => {
         console.log( req.file );
+	console.log("%j", req.body.projectName);
         res.sendStatus( 200 );
     },
 
@@ -319,6 +320,8 @@ let fusiontables = {
     oauthCallback: (req, res) => {
         // Retrieve code from google server to exchange for tokens
         let code = req.query.code;
+
+	console.log(code)
 
         // Exhchange code for access token and refresh token
         oauth2Client.getToken( code, function (err, tokens) {

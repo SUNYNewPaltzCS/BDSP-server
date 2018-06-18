@@ -7,7 +7,21 @@ let multer = require( 'multer' );
 
 const storage = multer.diskStorage( {
     destination: (req, file, next) => {
-        next( null, 'uploads' );
+	var dir = 'uploads';
+	var projectName = req.body.projectName;
+
+	if (!fs.existsSync(dir)){
+ 	   fs.mkdirSync(dir);
+	}
+	 
+	var upload = dir + "/" + projectName;
+
+	if (!fs.existsSync(upload)){
+ 	   fs.mkdirSync(upload);
+	}
+
+	console.log("AAA: %j", upload)
+        next( null, upload);
     },
     filename: (req, file, next) => {
         next( null, file.originalname );
